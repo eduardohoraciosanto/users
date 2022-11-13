@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+    service:
+        image: users-service
+        env_file: .env
+        build:
+            target: builder
+            context: .
+        ports:
+            - 28080:8080
+        volumes:
+            - ./:/go/src/github.com/eduardohoraciosanto/users
+            - swagger:/go/src/github.com/eduardohoraciosanto/users/swagger
+            - ./oas/oas.yml:/go/src/github.com/eduardohoraciosanto/users/swagger/swagger.yml
+        command: gowatch
+        depends_on:
+            - swagger
+    swagger:
+        image: swaggerapi/swagger-ui:v3.23.10
+        environment:
+            URL: /swagger/swagger.yml
+        volumes:
+            - swagger:/usr/share/nginx/html
+volumes:
+    #swagger named volume will be shared between service and swagger. So we can have a local swagger running
+    swagger: null

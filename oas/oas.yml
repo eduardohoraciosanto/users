@@ -1,0 +1,69 @@
+openapi: "3.0.0"
+info:
+  title: Simple Users Service
+  description: Microservice to manage Users
+  version: 1.0.0
+  contact:
+    name: Eduardo Santo
+    url: https://github.com/eduardohoraciosanto
+
+servers:
+  - url: "http://localhost:18080"
+    description: Local Environment
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health endpoint shows whether server and dependencies are running ok
+      responses:
+        "200":
+          description: Health Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    Meta:
+      properties:
+        version:
+          type: string
+    Error:
+      properties:
+        code:
+          type: string
+        description:
+          type: string
+    ErrorResponse:
+      properties:
+        meta:
+          $ref: "#/components/schemas/Meta"
+        error:
+          $ref: "#/components/schemas/Error"
+    HealthData:
+      properties:
+        name:
+          type: string
+        alive:
+          type: boolean
+    HealthResponse:
+      properties:
+        meta:
+          $ref: "#/components/schemas/Meta"
+        data:
+          properties:
+            services:
+              type: array
+              items:
+                $ref: "#/components/schemas/HealthData"
+
+tags:
+  - name: Health
+    description: Health Endpoint
