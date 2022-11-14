@@ -9,13 +9,6 @@ const (
 	ErrCodeBadRequest            = "err_bad_request"
 	ErrDescriptionBadRequestURL  = "The URL In Request contains errors"
 	ErrDescriptionBadRequestBody = "The provided body contains errors"
-
-	ErrDescriptionCartNotFound = "The Cart ID was not found"
-
-	ErrDescriptionItemAlreadyInCart = "The item already exists in the cart"
-	ErrDescriptionItemNotFound      = "The item does not exists in the cart"
-
-	ErrDescriptionItemNotFoundProvider = "The item was not found on the provider"
 )
 
 var (

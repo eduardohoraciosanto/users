@@ -53,6 +53,12 @@ func statusCodeFromError(err error) int {
 	mErr := &serviceErrors.ServiceError{}
 	if errors.As(err, mErr) {
 		switch mErr.Code {
+		case serviceErrors.ExternalApiCode:
+			return http.StatusFailedDependency
+		case serviceErrors.BadGenderCode, serviceErrors.BadEmailCode, serviceErrors.ParsingErrorCode:
+			return http.StatusBadRequest
+		case serviceErrors.UserNotFoundCode, serviceErrors.DBErrorNotFoundCode:
+			return http.StatusNotFound
 		default:
 			return http.StatusInternalServerError
 		}
@@ -70,19 +76,12 @@ func statusCodeFromError(err error) int {
 	return http.StatusInternalServerError
 }
 
-func descriptionFromError(mErr *serviceErrors.ServiceError) string {
-
-	switch mErr.Code {
-	}
-	return ErrDescriptionInternalServerError
-}
-
 func viewModelFromError(err error) Error {
 	sErr := &serviceErrors.ServiceError{}
 	if errors.As(err, sErr) {
 		return Error{
-			Code:        err.Error(),
-			Description: descriptionFromError(sErr),
+			Code:        string(sErr.Code),
+			Description: sErr.Description,
 		}
 	}
 	vErr := Error{}

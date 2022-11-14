@@ -9,8 +9,10 @@ import (
 	"time"
 
 	"github.com/eduardohoraciosanto/users/internal/config"
+	"github.com/eduardohoraciosanto/users/internal/db"
 	"github.com/eduardohoraciosanto/users/internal/logger"
 	"github.com/eduardohoraciosanto/users/pkg/health"
+	"github.com/eduardohoraciosanto/users/pkg/users"
 	transport "github.com/eduardohoraciosanto/users/transport/http"
 )
 
@@ -19,11 +21,16 @@ func main() {
 
 	l := logger.NewLogger("users api", config.GetVersion(), conf.TracingEnabled)
 
+	db := db.NewMemDB(l.WithField("svc", "db"))
+
 	hsvc := health.NewService(
-		l.WithField("svc", "health service"),
+		l.WithField("svc", "health"),
+		db,
 	)
 
-	httpTransportRouter := transport.NewHTTPRouter(hsvc)
+	userSvc := users.NewService(db, l.WithField("svc", "users"))
+
+	httpTransportRouter := transport.NewHTTPRouter(hsvc, userSvc)
 
 	srv := &http.Server{
 		Addr: fmt.Sprintf("0.0.0.0:%s", conf.Port),

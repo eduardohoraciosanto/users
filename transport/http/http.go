@@ -6,21 +6,29 @@ import (
 
 	iContext "github.com/eduardohoraciosanto/users/internal/context"
 	"github.com/eduardohoraciosanto/users/pkg/health"
+	"github.com/eduardohoraciosanto/users/pkg/users"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
-func NewHTTPRouter(h health.Service) *mux.Router {
+func NewHTTPRouter(h health.Service, u users.Service) *mux.Router {
 
-	hc := health.Handler{
+	hh := health.Handler{
 		Service: h,
+	}
+
+	uh := users.Handler{
+		Service: u,
 	}
 
 	r := mux.NewRouter()
 	r.Use(correlationIDMiddleware)
 	r.Use(remoteIPMiddleware)
 
-	r.HandleFunc("/health", hc.Health).Methods(http.MethodGet)
+	r.HandleFunc("/health", hh.Health).Methods(http.MethodGet)
+
+	//User Related Endpoints
+	r.HandleFunc("/users", uh.Create).Methods(http.MethodPost)
 
 	r.PathPrefix("/swagger").Handler(http.StripPrefix("/swagger", http.FileServer(http.Dir("./swagger"))))
 	return r

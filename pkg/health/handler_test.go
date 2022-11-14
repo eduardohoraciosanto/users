@@ -1,19 +1,23 @@
 package health_test
 
 import (
-	"context"
-	"fmt"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/eduardohoraciosanto/users/pkg/health"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestHealth_OK(t *testing.T) {
+
+	sMock := &health.ServiceMock{}
+	sMock.On("HealthCheck", mock.Anything).Return(true, true, nil)
+
 	h := health.Handler{
-		Service: &serviceMock{},
+		Service: sMock,
 	}
 
 	req, err := http.NewRequest("GET", "/health", nil)
@@ -29,10 +33,11 @@ func TestHealth_OK(t *testing.T) {
 }
 
 func TestHealth_ServiceError(t *testing.T) {
+	sMock := &health.ServiceMock{}
+	sMock.On("HealthCheck", mock.Anything).Return(true, true, errors.New("mock was asked to fail"))
+
 	h := health.Handler{
-		Service: &serviceMock{
-			shouldFail: true,
-		},
+		Service: sMock,
 	}
 
 	req, err := http.NewRequest("GET", "/", nil)
@@ -45,18 +50,4 @@ func TestHealth_ServiceError(t *testing.T) {
 	res := rr.Result()
 
 	assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
-}
-
-// mocks
-
-type serviceMock struct {
-	shouldFail    bool
-	serviceStatus bool
-}
-
-func (s *serviceMock) HealthCheck(ctx context.Context) (service bool, err error) {
-	if s.shouldFail {
-		return s.serviceStatus, fmt.Errorf("service asked to fail")
-	}
-	return s.serviceStatus, nil
 }
