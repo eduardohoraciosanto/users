@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 
+	iContext "github.com/eduardohoraciosanto/users/internal/context"
 	"go.uber.org/zap"
 )
 
@@ -38,7 +39,7 @@ func NewLogger(service string, version string, tracingEnabled bool) Logger {
 	}
 }
 
-// Sync MUST be defered to flush any buffered logs prior to shutting down the application.
+// Sync MUST be deferred to flush any buffered logs prior to shutting down the application.
 func (l *logger) Sync() error {
 	return l.internal.Sync()
 }
@@ -83,7 +84,8 @@ func (l *logger) Warn(ctx context.Context, message string) {
 // WithField allows for the inclusion of a key-value into the log
 func (l *logger) WithField(key string, value interface{}) Logger {
 	return &logger{
-		internal: l.internal.With(key, value),
+		internal:       l.internal.With(key, value),
+		tracingEnabled: l.tracingEnabled,
 	}
 }
 
@@ -94,17 +96,22 @@ func (l *logger) WithError(err error) Logger {
 	)
 
 	return &logger{
-		internal: newLogger,
+		internal:       newLogger,
+		tracingEnabled: l.tracingEnabled,
 	}
 }
 
 // injectTracing enters correlation ID if any.
 func (l *logger) injectTracing(ctx context.Context) *zap.SugaredLogger {
 	//add our correlation id if present
-	cid := ctx.Value("correlation_id")
+	cid := ctx.Value(iContext.CorrelationID("correlation_id"))
+	rIP := ctx.Value(iContext.RemoteIP("remote_ip"))
 	entry := l.internal
 	if cid != nil {
-		entry = entry.With("correlation_id", ctx.Value("correlation_id"))
+		entry = entry.With("correlation_id", ctx.Value(iContext.CorrelationID("correlation_id")))
+	}
+	if rIP != nil {
+		entry = entry.With("remote_ip", ctx.Value(iContext.RemoteIP("remote_ip")))
 	}
 
 	return entry

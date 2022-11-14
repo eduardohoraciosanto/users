@@ -17,7 +17,7 @@ import (
 func main() {
 	conf := config.New()
 
-	l := logger.NewLogger("shopping cart api", config.GetVersion(), conf.TracingEnabled)
+	l := logger.NewLogger("users api", config.GetVersion(), conf.TracingEnabled)
 
 	hsvc := health.NewService(
 		l.WithField("svc", "health service"),
