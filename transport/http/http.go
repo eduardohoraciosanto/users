@@ -29,6 +29,7 @@ func NewHTTPRouter(h health.Service, u users.Service) *mux.Router {
 
 	//User Related Endpoints
 	r.HandleFunc("/users", uh.Create).Methods(http.MethodPost)
+	r.HandleFunc("/users/login", uh.Login).Methods(http.MethodPost)
 
 	r.PathPrefix("/swagger").Handler(http.StripPrefix("/swagger", http.FileServer(http.Dir("./swagger"))))
 	return r

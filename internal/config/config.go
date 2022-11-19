@@ -10,6 +10,8 @@ var serviceVersion = "local"
 const (
 	port              = "HTTP_PORT"
 	tracingEnabledKey = "TRACING_ENABLED"
+	passCost          = "PASS_COST"
+	passSalt          = "PASS_SALT"
 )
 
 type Config struct {

@@ -26,7 +26,20 @@ type logger struct {
 // user MUST defer the call to Sync() immediately afterwards.
 
 func NewLogger(service string, version string, tracingEnabled bool) Logger {
-	l, err := zap.NewProduction()
+	c := zap.Config{
+		Level:       zap.NewAtomicLevelAt(zap.InfoLevel),
+		Development: false,
+		Sampling: &zap.SamplingConfig{
+			Initial:    100,
+			Thereafter: 100,
+		},
+		Encoding:          "json",
+		EncoderConfig:     zap.NewProductionEncoderConfig(),
+		OutputPaths:       []string{"stderr"},
+		ErrorOutputPaths:  []string{"stderr"},
+		DisableStacktrace: true,
+	}
+	l, err := c.Build()
 	if err != nil {
 		panic("unable to initialize logger: " + err.Error())
 	}

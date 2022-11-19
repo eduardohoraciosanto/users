@@ -3,10 +3,12 @@ package errors
 type ServiceErrorCode string
 
 const (
-	ExternalApiCode  = ServiceErrorCode("err_external_api_error")
-	BadGenderCode    = ServiceErrorCode("err_bad_gender")
-	BadEmailCode     = ServiceErrorCode("err_bad_email")
-	UserNotFoundCode = ServiceErrorCode("err_user_not_found")
+	ExternalApiCode        = ServiceErrorCode("err_external_api_error")
+	BadGenderCode          = ServiceErrorCode("err_bad_gender")
+	BadEmailCode           = ServiceErrorCode("err_bad_email")
+	UserNotFoundCode       = ServiceErrorCode("err_user_not_found")
+	EmailTakenCode         = ServiceErrorCode("err_email_taken")
+	InvalidCredentialsCode = ServiceErrorCode("err_invalid_credentials")
 
 	InternalErrorCode = ServiceErrorCode("err_internal")
 

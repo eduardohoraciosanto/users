@@ -7,6 +7,7 @@ import (
 
 	"github.com/eduardohoraciosanto/users/internal/errors"
 	"github.com/eduardohoraciosanto/users/internal/response"
+	"github.com/gorilla/mux"
 )
 
 type Handler struct {
@@ -39,7 +40,7 @@ func (c *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	gender := rune(payload.Gender[0])
 
-	user, err := c.Service.Create(r.Context(), payload.Name, payload.Age, payload.Email, bd, gender)
+	user, err := c.Service.Create(r.Context(), payload.Name, payload.Age, payload.Email, bd, gender, payload.Password)
 	if err != nil {
 		response.RespondWithError(w, err)
 		return
@@ -47,12 +48,67 @@ func (c *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	res := CreateUserResponse{
 		User: UserTransport{
 			ID:        user.ID,
-			Name:      user.Name,
-			Age:       user.Age,
-			Email:     user.Email,
-			Birthdate: user.Birthdate.Format("2006-01-02"),
-			Gender:    string(user.Gender),
+			Name:      user.Profile.Name,
+			Age:       user.Profile.Age,
+			Email:     user.Profile.Email,
+			Birthdate: user.Profile.BirthDate.Format("2006-01-02"),
+			Gender:    string(user.Profile.Gender),
 		},
 	}
+	response.RespondWithData(w, http.StatusOK, res)
+}
+
+//Get retrieves a user from the DB if it exists
+func (c *Handler) Get(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	user, err := c.Service.Get(r.Context(), vars["user_email"])
+	if err != nil {
+		response.RespondWithError(w, err)
+		return
+	}
+	res := GetUserResponse{
+		User: UserTransport{
+			ID:        user.ID,
+			Name:      user.Profile.Name,
+			Age:       user.Profile.Age,
+			Email:     user.Profile.Email,
+			Birthdate: user.Profile.BirthDate.Format("2006-01-02"),
+			Gender:    string(user.Profile.Gender),
+		},
+	}
+	response.RespondWithData(w, http.StatusOK, res)
+}
+
+func (c *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	payload := &LoginUserRequest{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	err := d.Decode(payload)
+	if err != nil {
+		response.RespondWithError(w, errors.NewFromError(errors.ParsingErrorCode, err))
+		return
+	}
+
+	user, err := c.Service.Login(r.Context(), payload.Email, payload.Password)
+	if err != nil {
+		response.RespondWithError(w, err)
+		return
+	}
+	res := LoginUserResponse{
+		User: UserTransport{
+			ID:        user.ID,
+			Name:      user.Profile.Name,
+			Age:       user.Profile.Age,
+			Email:     user.Profile.Email,
+			Birthdate: user.Profile.BirthDate.Format("2006-01-02"),
+			Gender:    string(user.Profile.Gender),
+		},
+		JWT: JWT{
+			AccessToken:  "TBD",
+			RefreshToken: "TBD",
+		},
+	}
+
 	response.RespondWithData(w, http.StatusOK, res)
 }
