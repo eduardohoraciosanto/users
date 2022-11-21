@@ -21,6 +21,22 @@ func main() {
 
 	l := logger.NewLogger("users api", config.GetVersion(), conf.TracingEnabled)
 
+	/*
+		cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
+			// Hard coded credentials.
+			awsConfig.WithCredentialsProvider(credentials.StaticCredentialsProvider{
+				Value: aws.Credentials{
+					AccessKeyID: conf.AWSAccessKey, SecretAccessKey: conf.AWSSecretKey, SessionToken: "",
+					Source: "environment",
+				},
+			}))
+		if err != nil {
+			l.WithError(err).Error(context.TODO(), "Unable to load AWS Config")
+			return
+		}
+		db := db.NewDynamoDB("users", dynamodb.NewFromConfig(cfg), l.WithField("svc", "dynamo DB"))
+	*/
+
 	db := db.NewMemDB(l.WithField("svc", "db"))
 
 	hsvc := health.NewService(

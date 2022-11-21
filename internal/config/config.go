@@ -10,19 +10,23 @@ var serviceVersion = "local"
 const (
 	port              = "HTTP_PORT"
 	tracingEnabledKey = "TRACING_ENABLED"
-	passCost          = "PASS_COST"
-	passSalt          = "PASS_SALT"
+	awsAccessKey      = "AWS_ACCESS_KEY"
+	awsSecretKey      = "AWS_SECRET_KEY"
 )
 
 type Config struct {
 	Port           string
 	TracingEnabled bool
+	AWSAccessKey   string
+	AWSSecretKey   string
 }
 
 func New() Config {
 	return Config{
 		Port:           GetEnvString(port, "8080"),
 		TracingEnabled: GetEnvBool(tracingEnabledKey, false),
+		AWSAccessKey:   GetEnvString(awsAccessKey, ""),
+		AWSSecretKey:   GetEnvString(awsSecretKey, ""),
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/eduardohoraciosanto/users/internal/errors"
 	"github.com/eduardohoraciosanto/users/internal/logger"
 )
 
@@ -57,6 +58,10 @@ func (d *dynamo) Get(ctx context.Context, key string, here interface{}) error {
 		l.WithError(err).Error(ctx, "unable to get item from DB")
 		return err
 	} else {
+		if response.Item == nil {
+			l.WithError(err).Error(ctx, "element not found on DB")
+			return errors.New(errors.DBErrorNotFoundCode, "element not found on DB")
+		}
 		err = attributevalue.UnmarshalMap(response.Item, here)
 		if err != nil {
 			l.WithError(err).Error(ctx, "unable to unmarshal item from DB")
