@@ -47,10 +47,9 @@ func (c *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	res := CreateUserResponse{
 		User: UserTransport{
-			ID:        user.ID,
 			Name:      user.Profile.Name,
 			Age:       user.Profile.Age,
-			Email:     user.Profile.Email,
+			Email:     user.Email,
 			Birthdate: user.Profile.BirthDate.Format("2006-01-02"),
 			Gender:    string(user.Profile.Gender),
 		},
@@ -69,10 +68,9 @@ func (c *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 	res := GetUserResponse{
 		User: UserTransport{
-			ID:        user.ID,
 			Name:      user.Profile.Name,
 			Age:       user.Profile.Age,
-			Email:     user.Profile.Email,
+			Email:     user.Email,
 			Birthdate: user.Profile.BirthDate.Format("2006-01-02"),
 			Gender:    string(user.Profile.Gender),
 		},
@@ -97,10 +95,9 @@ func (c *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	res := LoginUserResponse{
 		User: UserTransport{
-			ID:        user.ID,
 			Name:      user.Profile.Name,
 			Age:       user.Profile.Age,
-			Email:     user.Profile.Email,
+			Email:     user.Email,
 			Birthdate: user.Profile.BirthDate.Format("2006-01-02"),
 			Gender:    string(user.Profile.Gender),
 		},

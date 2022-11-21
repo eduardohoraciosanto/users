@@ -9,24 +9,23 @@ const (
 )
 
 type User struct {
-	ID        string    `json:"id"`
-	Profile   Profile   `json:"profile"`
-	LastLogin time.Time `json:"last_login"`
+	ID        string    `json:"id",dynamodbav:"id"`
+	Email     string    `json:"email",dynamodbav:"email"`
+	Password  string    `json:"password",dynamodbav:"password"`
+	Profile   Profile   `json:"profile",dynamodbav:"profile"`
+	LastLogin time.Time `json:"last_login",dynamodbav:"last_login"`
 }
 
 type Profile struct {
-	Name      string    `json:"name"`
-	Age       int       `json:"age"`
-	Email     string    `json:"email"`
-	BirthDate time.Time `json:"birthdate"`
-	Gender    rune      `json:"gender"`
-	Password  string    `json:"password"`
+	Name      string    `json:"name"dynamodbav:"name"`
+	Age       int       `json:"age",dynamodbav:"age"`
+	BirthDate time.Time `json:"birth_date",dynamodbav:"birth_date"`
+	Gender    rune      `json:"gender",dynamodbav:"gender"`
 }
 
 //Transport Models
 
 type UserTransport struct {
-	ID        string `json:"id"`
 	Name      string `json:"name"`
 	Age       int    `json:"age"`
 	Email     string `json:"email"`

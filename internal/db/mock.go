@@ -14,9 +14,9 @@ func (d *DBMock) Set(ctx context.Context, key string, data interface{}) error {
 	args := d.Called(ctx, key, data)
 	return args.Error(0)
 }
-func (d *DBMock) Get(ctx context.Context, key string) (interface{}, error) {
-	args := d.Called(ctx, key)
-	return args.String(0), args.Error(1)
+func (d *DBMock) Get(ctx context.Context, key string, here interface{}) error {
+	args := d.Called(ctx, key, here)
+	return args.Error(0)
 }
 func (d *DBMock) Delete(ctx context.Context, key string) error {
 	args := d.Called(ctx, key)

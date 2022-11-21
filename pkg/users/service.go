@@ -2,7 +2,6 @@ package users
 
 import (
 	"context"
-	"encoding/json"
 	"net/mail"
 	"time"
 
@@ -34,8 +33,9 @@ func NewService(db db.DB, log logger.Logger) Service {
 }
 
 func (u *users) Create(ctx context.Context, name string, age int, email string, birthdate time.Time, gender rune, pass string) (User, error) {
+	userDB := &User{}
 	//check if user exists
-	_, err := u.db.Get(ctx, email)
+	err := u.db.Get(ctx, email, userDB)
 	if err == nil {
 		u.log.WithField("email", email).Error(ctx, "email already taken")
 		return User{}, errors.New(errors.EmailTakenCode, "email already used")
@@ -67,14 +67,14 @@ func (u *users) Create(ctx context.Context, name string, age int, email string, 
 	}
 
 	user := User{
-		ID: id,
+		ID:       id,
+		Email:    email,
+		Password: string(hPass),
 		Profile: Profile{
 			Name:      name,
 			Age:       age,
-			Email:     email,
 			BirthDate: birthdate,
 			Gender:    gender,
-			Password:  string(hPass),
 		},
 	}
 
@@ -99,7 +99,7 @@ func (u *users) Login(ctx context.Context, email, password string) (User, error)
 		return User{}, errors.New(errors.InvalidCredentialsCode, "Invalid Credentials")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Profile.Password), []byte(user.ID+password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(user.ID+password))
 	if err != nil {
 		u.log.WithField("user_email", email).
 			WithError(err).Error(ctx, "Invalid Password")
@@ -120,26 +120,13 @@ func (u *users) Login(ctx context.Context, email, password string) (User, error)
 
 func (u *users) Get(ctx context.Context, email string) (User, error) {
 
-	userDB, err := u.db.Get(ctx, email)
+	user := User{}
+
+	err := u.db.Get(ctx, email, &user)
 	if err != nil {
 		u.log.WithField("user_email", email).
 			WithError(err).Error(ctx, "Unable to get user")
 		return User{}, errors.NewFromError(errors.UserNotFoundCode, err)
-	}
-
-	userStr, ok := userDB.(string)
-	if !ok {
-		u.log.WithField("db_data", userDB).Error(ctx, "Unexpected data on DB")
-		return User{}, errors.New(errors.InternalErrorCode, "unexpected data on DB")
-	}
-
-	user := User{}
-	err = json.Unmarshal([]byte(userStr), &user)
-	if err != nil {
-		u.log.WithError(err).
-			WithField("raw_user", userStr).
-			Error(ctx, "Unable parse saved user")
-		return User{}, errors.NewFromError(errors.InternalErrorCode, err)
 	}
 
 	u.log.WithField("user_email", email).Info(ctx, "Got User from DB")
@@ -149,37 +136,29 @@ func (u *users) Get(ctx context.Context, email string) (User, error) {
 }
 func (u *users) Save(ctx context.Context, user User) error {
 
-	userBytes, err := json.Marshal(user)
+	err := u.db.Set(ctx, user.Email, user)
 	if err != nil {
 		u.log.WithError(err).
-			WithField("user_email", user.Profile.Email).
-			Error(ctx, "Unable to marshal user")
-		return errors.NewFromError(errors.InternalErrorCode, err)
-	}
-
-	err = u.db.Set(ctx, user.Profile.Email, string(userBytes))
-	if err != nil {
-		u.log.WithError(err).
-			WithField("user_email", user.Profile.Email).
+			WithField("user_email", user.Email).
 			Error(ctx, "Unable to save user on DB")
 		return errors.NewFromError(errors.DBErrorSavingCode, err)
 	}
 
-	u.log.WithField("user_email", user.Profile.Email).Info(ctx, "User saved successfully")
+	u.log.WithField("user_email", user.Email).Info(ctx, "User saved successfully")
 
 	return nil
 }
 
 func (u *users) Delete(ctx context.Context, user User) error {
-	err := u.db.Delete(ctx, user.Profile.Email)
+	err := u.db.Delete(ctx, user.Email)
 	if err != nil {
 		u.log.WithError(err).
-			WithField("user_email", user.Profile.Email).
+			WithField("user_email", user.Email).
 			Error(ctx, "Unable to delete user from DB")
 		return errors.NewFromError(errors.DBErrorDeletingCode, err)
 	}
 
-	u.log.WithField("user_email", user.Profile.Email).Info(ctx, "User deleted successfully")
+	u.log.WithField("user_email", user.Email).Info(ctx, "User deleted successfully")
 
 	return nil
 }
